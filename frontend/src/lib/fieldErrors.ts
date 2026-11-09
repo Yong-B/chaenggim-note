@@ -25,3 +25,9 @@ export function splitFieldErrors(
   }
   return { errors, formErrors }
 }
+
+/** 입력의 aria-describedby 값: 에러가 있으면 "{id}-error", 안내가 있으면 "{id}-hint". */
+export function fieldDescribedBy(id: string, error?: string, hasHint?: boolean): string | undefined {
+  const ids = [error ? `${id}-error` : null, hasHint ? `${id}-hint` : null].filter(Boolean)
+  return ids.length ? ids.join(' ') : undefined
+}
