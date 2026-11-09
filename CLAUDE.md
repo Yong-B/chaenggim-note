@@ -77,5 +77,5 @@ Hanmi/                       ← 저장소 루트 = 백엔드 (Spring Boot, Grad
 
 - `docs/10_작업순서.md` T0~T14 완료 기준 전부 체크 (T15는 사용자가 요청할 때만)
 - 백엔드 테스트 전부 통과, 프론트 lint·build 통과
-- 저장소 루트에서 `./gradlew bootRun`, `frontend`에서 `npm run dev` 후 http://localhost:5173 에서
+- 저장소 루트에서 `./gradlew bootRun`, `frontend`에서 `npm run dev` 후 http://localhost:5174 에서
   375px(휴대폰)과 1280px(PC) 폭 모두 화면이 깨지지 않음
