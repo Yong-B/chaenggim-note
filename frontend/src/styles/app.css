@@ -435,6 +435,30 @@ a.row__main:hover .row__title {
   gap: var(--space-xs);
 }
 
+.row {
+  flex-wrap: wrap;
+}
+
+.row__main {
+  flex-basis: 200px;
+}
+
+.row--top {
+  align-items: flex-start;
+}
+
+.row__action a,
+.inline-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hit);
+  padding: 0 var(--space-2xs);
+}
+
+.row__note {
+  max-width: 14em;
+}
+
 .row--done .row__title {
   text-decoration: line-through;
   text-decoration-color: var(--color-muted);
@@ -671,6 +695,56 @@ a.row__main:hover .row__title {
 .btn--large {
   min-height: 52px;
   font-size: var(--text-base);
+}
+
+.btn--block-mobile {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .btn--block-mobile {
+    width: auto;
+  }
+}
+
+/* ---------------------------------------------------------------- page parts */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.search {
+  display: flex;
+  flex: 1 1 280px;
+  gap: var(--space-xs);
+  max-width: 480px;
+}
+
+.search .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.doctor-info {
+  margin-top: calc(var(--space-md) * -1);
+  margin-bottom: var(--space-lg);
+}
+
+.doctor-info .memo {
+  margin-top: var(--space-xs);
+}
+
+.doctor-info__actions {
+  margin-top: var(--space-xs);
+}
+
+.doctor-visit-cta {
+  margin-bottom: var(--space-xl);
 }
 
 .inline-actions {
