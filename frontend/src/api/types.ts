@@ -107,6 +107,8 @@ export type HomeResponse = {
 
 export type QuestionListResponse = {
   status: QuestionStatus
+  /** 적용한 제품 필터 (P1). 없으면 null */
+  product: ProductTag | null
   counts: Record<QuestionStatus, number>
   items: QuestionResponse[]
 }

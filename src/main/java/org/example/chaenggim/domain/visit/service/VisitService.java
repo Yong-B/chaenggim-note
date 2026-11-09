@@ -75,7 +75,8 @@ public class VisitService {
                 .memo(request.memo())
                 .build());
         for (QuestionItem item : request.questions()) {
-            questionRepository.save(Question.builder().visit(visit).content(item.content()).build());
+            questionRepository.save(Question.builder()
+                    .visit(visit).content(item.content()).productTag(item.productTag()).build());
         }
         for (CommitmentItem item : commitmentItems) {
             commitmentRepository.save(Commitment.builder()

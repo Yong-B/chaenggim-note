@@ -2,7 +2,7 @@ package org.example.chaenggim.domain.question.entity;
 
 import lombok.Getter;
 
-/** P1. T15 전까지 Question.productTag는 항상 null. */
+/** P1 제품 태그. 질문 작성 시 선택, 질문함 제품 필터에 쓴다. */
 @Getter
 public enum ProductTag {
     ROSUZET("로수젯"),

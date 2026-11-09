@@ -55,6 +55,15 @@ class QuestionTest {
     }
 
     @Test
+    @DisplayName("P1 제품 태그는 생성 시 선택해 저장한다")
+    void createWithProductTag() {
+        Question q = Question.builder().visit(visit).content("질문").productTag(ProductTag.AMOSARTAN).build();
+
+        assertThat(q.getProductTag()).isEqualTo(ProductTag.AMOSARTAN);
+        assertThat(q.getStatus()).isEqualTo(QuestionStatus.UNANSWERED);
+    }
+
+    @Test
     @DisplayName("Q-2 미답변 질문은 확인을 시작하면 확인 중이 된다")
     void startChecking() {
         Question q = unanswered();

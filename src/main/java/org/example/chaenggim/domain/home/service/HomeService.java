@@ -67,7 +67,7 @@ public class HomeService {
     private Map<QuestionStatus, Long> questionCounts() {
         Map<QuestionStatus, Long> counts = new EnumMap<>(QuestionStatus.class);
         HOME_STATUSES.forEach(s -> counts.put(s, 0L));
-        for (StatusCount c : questionRepository.countActiveByStatus()) {
+        for (StatusCount c : questionRepository.countActiveByStatus(null)) {
             if (counts.containsKey(c.status())) {
                 counts.put(c.status(), c.count());
             }

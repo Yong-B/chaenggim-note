@@ -10,6 +10,7 @@ import org.example.chaenggim.domain.question.dto.AnswerRequest;
 import org.example.chaenggim.domain.question.dto.QuestionListResponse;
 import org.example.chaenggim.domain.question.dto.QuestionResponse;
 import org.example.chaenggim.domain.question.dto.QuestionUpdateRequest;
+import org.example.chaenggim.domain.question.entity.ProductTag;
 import org.example.chaenggim.domain.question.entity.Question;
 import org.example.chaenggim.domain.question.entity.QuestionStatus;
 import org.example.chaenggim.domain.question.repository.QuestionRepository;
@@ -29,24 +30,38 @@ public class QuestionService {
 
     /** 7.3 질문함. status가 없거나 잘못된 값이면 UNANSWERED. */
     public QuestionListResponse list(String statusParam) {
+        return list(statusParam, null);
+    }
+
+    /**
+     * 7.3 질문함 + 제품 필터(P1). product가 없거나 잘못된 값이면 전체.
+     * 상태별 개수도 같은 제품 필터를 적용한다(탭 숫자와 목록이 맞도록).
+     */
+    public QuestionListResponse list(String statusParam, String productParam) {
         QuestionStatus status = parseStatus(statusParam);
+        ProductTag product = parseProduct(productParam);
         List<Question> questions = status == QuestionStatus.DELIVERED
-                ? questionRepository.findActiveDelivered()
-                : questionRepository.findActiveByStatusOrderByVisitDate(status);
+                ? questionRepository.findActiveDelivered(product)
+                : questionRepository.findActiveByStatusOrderByVisitDate(status, product);
 
         return new QuestionListResponse(
                 status,
-                countByStatus(),
+                product,
+                countByStatus(product),
                 questions.stream().map(QuestionResponse::from).toList());
     }
 
     /** 숨김 의료진 제외, 4개 상태 모두 포함(없으면 0). */
     public Map<QuestionStatus, Long> countByStatus() {
+        return countByStatus(null);
+    }
+
+    private Map<QuestionStatus, Long> countByStatus(ProductTag product) {
         Map<QuestionStatus, Long> counts = new EnumMap<>(QuestionStatus.class);
         for (QuestionStatus s : QuestionStatus.values()) {
             counts.put(s, 0L);
         }
-        for (StatusCount c : questionRepository.countActiveByStatus()) {
+        for (StatusCount c : questionRepository.countActiveByStatus(product)) {
             counts.put(c.status(), c.count());
         }
         return counts;
@@ -94,6 +109,17 @@ public class QuestionService {
     private Question findActive(Long id) {
         return questionRepository.findActiveById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+    }
+
+    private static ProductTag parseProduct(String value) {
+        if (value != null) {
+            for (ProductTag p : ProductTag.values()) {
+                if (p.name().equals(value)) {
+                    return p;
+                }
+            }
+        }
+        return null;
     }
 
     private static QuestionStatus parseStatus(String value) {

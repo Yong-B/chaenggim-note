@@ -67,9 +67,10 @@ public class Question extends BaseTimeEntity {
     @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
 
-    /** doctor는 visit.getDoctor(), status는 UNANSWERED로 고정한다(빌더 인자 아님). */
+    /** doctor는 visit.getDoctor(), status는 UNANSWERED로 고정한다(빌더 인자 아님). productTag는 선택(P1). */
     @Builder
-    private Question(Visit visit, String content) {
+    private Question(Visit visit, String content, ProductTag productTag) {
+        this.productTag = productTag;
         this.visit = visit;
         this.doctor = visit.getDoctor();
         this.content = content;

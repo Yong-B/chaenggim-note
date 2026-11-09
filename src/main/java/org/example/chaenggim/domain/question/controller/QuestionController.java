@@ -26,11 +26,12 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
-    /** status가 없거나 잘못된 값이면 UNANSWERED. */
+    /** status가 없거나 잘못된 값이면 UNANSWERED. product가 없거나 잘못된 값이면 전체(P1). */
     @GetMapping
     public ResponseEntity<ApiResponse<QuestionListResponse>> list(
-            @RequestParam(name = "status", required = false) String status) {
-        return ResponseEntity.ok(ApiResponse.ok(questionService.list(status)));
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "product", required = false) String product) {
+        return ResponseEntity.ok(ApiResponse.ok(questionService.list(status, product)));
     }
 
     @GetMapping("/{id}")

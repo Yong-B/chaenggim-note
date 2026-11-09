@@ -92,7 +92,7 @@ class SeedServiceTest {
                         tuple("환자용 복약 안내 자료가 있는지 물어보심", QuestionStatus.READY),
                         tuple("에페 출시 일정이 정해졌는지 물어보심", QuestionStatus.DELIVERED));
 
-        Question q5 = questionRepository.findActiveDelivered().get(0);
+        Question q5 = questionRepository.findActiveDelivered(null).get(0);
         assertThat(q5.getAnsweredAt()).isEqualTo(T.minusDays(8).atTime(10, 0));
         assertThat(q5.getDeliveredAt()).isEqualTo(T.minusDays(6).atTime(14, 0));
 
