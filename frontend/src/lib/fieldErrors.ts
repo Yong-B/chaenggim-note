@@ -31,3 +31,11 @@ export function fieldDescribedBy(id: string, error?: string, hasHint?: boolean):
   const ids = [error ? `${id}-error` : null, hasHint ? `${id}-hint` : null].filter(Boolean)
   return ids.length ? ids.join(' ') : undefined
 }
+
+/** 입력값이 바뀐 필드의 에러만 지운다 (07 문서 4.3절). */
+export function clearError(errors: Record<string, string>, field: string): Record<string, string> {
+  if (!(field in errors)) return errors
+  const next = { ...errors }
+  delete next[field]
+  return next
+}
