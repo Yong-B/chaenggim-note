@@ -47,13 +47,23 @@ export const useAnswerMutation = (id: number) =>
 
 export const useDeliverMutation = (id: number) => useQuestionChange(id, () => deliverQuestion(id))
 
+/**
+ * 삭제: ['question', id]는 무효화 대신 제거해야 하지만, 상세 화면이 떠 있는 동안 제거하면 다시 요청해 404가 잠깐 보이므로
+ * 제거는 화면 이동 뒤에 removeQuestionQuery로 한다.
+ */
 export function useDeleteQuestionMutation(id: number, doctorId: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => deleteQuestion(id),
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: keys.question(id) })
-      return invalidateQuestion(queryClient, id, doctorId)
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.doctor(doctorId) }),
+        queryClient.invalidateQueries({ queryKey: keys.home }),
+        queryClient.invalidateQueries({ queryKey: ['questions'] }),
+      ]),
   })
+}
+
+export function removeQuestionQuery(queryClient: QueryClient, id: number) {
+  queryClient.removeQueries({ queryKey: keys.question(id) })
 }

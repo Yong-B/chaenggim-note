@@ -1004,6 +1004,55 @@ fieldset.form__group > legend + * {
   white-space: pre-wrap;
 }
 
+/* ---------------------------------------------------------------- question detail */
+
+.question-card {
+  padding-bottom: var(--space-md);
+  border-bottom: var(--rule-hair) solid var(--color-ink);
+}
+
+.notice {
+  margin-bottom: var(--space-md);
+  color: var(--color-ink-2);
+}
+
+.start-checking {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.start-checking .field__hint {
+  flex: 1 1 200px;
+}
+
+.answer-actions {
+  margin: var(--space-md) 0;
+}
+
+.answer-delivered {
+  margin: var(--space-xs) 0 var(--space-md);
+}
+
+.radio-field {
+  min-width: 0;
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  border: 0;
+}
+
+.radio-field > legend {
+  margin-bottom: var(--space-2xs);
+  padding: 0;
+}
+
+.danger-zone {
+  padding-top: var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
 /* ---------------------------------------------------------------- query state */
 
 .query-state {
