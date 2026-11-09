@@ -10,6 +10,7 @@ import { formatDate, formatDateTime } from '../../lib/date'
 import { errorMessage } from '../../lib/errors'
 import { commitmentBadge, sourceLabel, statusLabel, statusTone } from '../../lib/labels'
 import {
+  removeCommitmentQuery,
   useCompleteCommitmentMutation,
   useDeleteCommitmentMutation,
   useReopenCommitmentMutation,
@@ -295,6 +296,7 @@ function VisitRow({ visit: v }: { visit: VisitResponse }) {
 
 function DoneCommitmentRow({ commitment: c }: { commitment: CommitmentResponse }) {
   const toast = useToast()
+  const queryClient = useQueryClient()
   const reopen = useReopenCommitmentMutation()
   const remove = useDeleteCommitmentMutation()
 
@@ -309,7 +311,10 @@ function DoneCommitmentRow({ commitment: c }: { commitment: CommitmentResponse }
     remove.mutate(
       { id: c.id, doctorId: c.doctor.id },
       {
-        onSuccess: () => toast.show('약속을 삭제했습니다.'),
+        onSuccess: () => {
+          removeCommitmentQuery(queryClient, c.id)
+          toast.show('약속을 삭제했습니다.')
+        },
         onError: (e) => toast.show(errorMessage(e), 'danger'),
       },
     )
