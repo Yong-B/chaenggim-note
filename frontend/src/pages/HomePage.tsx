@@ -17,7 +17,8 @@ export function HomePage() {
 
   return (
     <>
-      <PageTitle title="오늘 챙길 것" />
+      {/* ① 날짜 줄은 제목 바로 아래(서버 today 기준, 불러온 뒤 표시) */}
+      <PageTitle title="오늘 챙길 것" lead={query.data ? `오늘 ${formatDate(query.data.today)}` : undefined} />
       <QueryState query={query}>{(data) => <HomeContent data={data} />}</QueryState>
     </>
   )
@@ -26,7 +27,6 @@ export function HomePage() {
 function HomeContent({ data }: { data: HomeResponse }) {
   return (
     <>
-      <p className="home-date">오늘 {formatDate(data.today)}</p>
       <div className="home-grid">
         <div className="home-grid__left">
           <section className="section" aria-labelledby="home-overdue">
