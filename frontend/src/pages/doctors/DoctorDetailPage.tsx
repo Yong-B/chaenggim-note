@@ -33,13 +33,10 @@ function DoctorDetail({ detail }: { detail: DoctorDetailResponse }) {
 
   return (
     <>
-      <PageTitle title={doctor.name} />
+      {/* ① 기본 정보: {병원} · {진료과}는 제목 바로 아래 */}
+      <PageTitle title={doctor.name} lead={`${doctor.hospital} · ${doctor.department}`} />
 
-      {/* ① 기본 정보 */}
       <section className="section doctor-info" aria-label="기본 정보">
-        <p className="row__text">
-          {doctor.hospital} · {doctor.department}
-        </p>
         {doctor.memo && <p className="memo muted-text">{doctor.memo}</p>}
         <p className="row__sub">
           {doctor.nextVisitDate ? `다음 방문 예정 ${formatDate(doctor.nextVisitDate)}` : '다음 방문 예정일 없음'}
