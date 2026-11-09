@@ -47,13 +47,22 @@ export function useReopenCommitmentMutation() {
   })
 }
 
+/**
+ * 삭제: ['commitment', id]는 무효화 대신 제거해야 하지만, 수정 화면이 떠 있는 동안 제거하면 다시 요청해 404가 잠깐 보이므로
+ * 수정 화면에서는 화면 이동 뒤에 removeCommitmentQuery로 제거한다(목록에서 삭제할 때는 그 쿼리를 쓰는 화면이 없다).
+ */
 export function useDeleteCommitmentMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id }: { id: number; doctorId: number }) => deleteCommitment(id),
-    onSuccess: (_data, { id, doctorId }) => {
-      queryClient.removeQueries({ queryKey: keys.commitment(id) })
-      return invalidateCommitment(queryClient, id, doctorId)
-    },
+    onSuccess: (_data, { doctorId }) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.doctor(doctorId) }),
+        queryClient.invalidateQueries({ queryKey: keys.home }),
+      ]),
   })
+}
+
+export function removeCommitmentQuery(queryClient: QueryClient, id: number) {
+  queryClient.removeQueries({ queryKey: keys.commitment(id) })
 }

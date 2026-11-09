@@ -1126,3 +1126,7 @@ fieldset.form__group > legend + * {
     transform: none;
   }
 }
+
+.form__actions-end {
+  margin-left: auto;
+}
