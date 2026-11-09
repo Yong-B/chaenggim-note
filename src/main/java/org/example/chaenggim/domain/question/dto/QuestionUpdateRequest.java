@@ -1,0 +1,16 @@
+package org.example.chaenggim.domain.question.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.example.chaenggim.global.util.Texts;
+
+public record QuestionUpdateRequest(
+        @NotBlank(message = "질문 내용을 입력해 주세요.")
+        @Size(max = 500, message = "질문은 500자 이하로 입력해 주세요.")
+        String content
+) {
+
+    public QuestionUpdateRequest {
+        content = Texts.strip(content);
+    }
+}
