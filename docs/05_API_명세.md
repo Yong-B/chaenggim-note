@@ -5,30 +5,58 @@
 - enum은 영문 이름 문자열 (`"READY"`, `"CLINICAL"`)
 - 숨김 의료진과 그 데이터는 어떤 응답에도 나오지 않는다(R7)
 
-## 1. 공통 에러 응답
+## 1. 공통 응답 형식 (ApiResponse)
 
-```json
+모든 응답 본문은 `ApiResponse`로 감싼다(`11_코딩_컨벤션.md` K5). 컨트롤러 반환 타입은 `ResponseEntity<ApiResponse<T>>`.
+
+```jsonc
+// 성공
+{ "success": true, "data": { ... }, "error": null }
+
+// 성공 · 돌려줄 데이터 없음 (삭제, 초기화)
+{ "success": true, "data": null, "error": null }
+
+// 실패
 {
-  "code": "VALIDATION_FAILED",
-  "message": "입력값을 확인해 주세요.",
-  "fieldErrors": [
-    { "field": "name", "message": "이름을 입력해 주세요." }
-  ]
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "입력값을 확인해 주세요.",
+    "fieldErrors": [
+      { "field": "name", "message": "이름을 입력해 주세요." }
+    ]
+  }
 }
 ```
 
-| 상황 | HTTP | code | message | fieldErrors |
+```java
+public record ApiResponse<T>(boolean success, T data, ErrorBody error) {
+    static <T> ApiResponse<T> ok(T data);           // success=true, error=null
+    static ApiResponse<Void> ok();                  // success=true, data=null
+    static ApiResponse<Void> fail(ErrorBody error); // success=false, data=null
+}
+public record ErrorBody(String code, String message, List<FieldErrorItem> fieldErrors) { }
+```
+
+- **이 문서 3절 이후의 응답 JSON 예시와 표의 "성공" 타입은 `data` 안에 들어가는 값**이다.
+- 삭제·초기화는 본문이 있어야 하므로 **204 대신 200** + `data: null`.
+- 등록(201)은 `Location` 헤더 + `data`에 생성된 객체.
+
+### 1.1 에러
+
+| 상황 | HTTP | error.code | error.message | error.fieldErrors |
 | --- | --- | --- | --- | --- |
-| Bean Validation 실패 / `FieldValidationException` / 날짜 파싱 실패 | 400 | `VALIDATION_FAILED` | `입력값을 확인해 주세요.` | 있음 |
+| Bean Validation 실패 / 서비스 필드 검증(`BusinessException` + fieldErrors) / 날짜 파싱 실패 | 400 | `VALIDATION_FAILED` | `입력값을 확인해 주세요.` | 있음 |
 | JSON 형식 자체가 잘못됨 | 400 | `BAD_REQUEST` | `요청 형식이 올바르지 않습니다.` | `[]` |
-| `NotFoundException` / 없는 경로 | 404 | `NOT_FOUND` | `요청한 정보를 찾을 수 없습니다.` | `[]` |
-| `InvalidStateException` | 409 | 예외의 code | 예외의 message | `[]` |
+| `ErrorCode.NOT_FOUND` / 없는 경로 | 404 | `NOT_FOUND` | `요청한 정보를 찾을 수 없습니다.` | `[]` |
+| 상태 규칙 위반 `BusinessException` | 409 | ErrorCode의 code | ErrorCode의 message | `[]` |
 | 그 외 예외 | 500 | `INTERNAL_ERROR` | `일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.` | `[]` |
 
 - `fieldErrors`는 항상 배열(없으면 `[]`). 한 필드에 에러가 여럿이면 첫 번째만 넣는다.
 - 날짜 파싱 실패 시 field는 해당 필드 경로, message는 `날짜 형식이 올바르지 않습니다.`
   - 구현: `HttpMessageNotReadableException`의 원인이 Jackson `InvalidFormatException`이고 대상 타입이 `LocalDate`면, 예외의 `getPath()`로 경로를 만든다(`commitments[0].dueDate` 형식: 이름 있는 항목은 `.이름`, 배열 항목은 `[인덱스]`). 그 외 `HttpMessageNotReadableException`은 `BAD_REQUEST`.
-- 409 code 목록: `QUESTION_NOT_UNANSWERED`, `QUESTION_NOT_READY`, `QUESTION_LOCKED`, `VISIT_HAS_DELIVERED`, `COMMITMENT_DONE` (`02_도메인_규칙.md` 4.2, 3, 5절)
+- 409 code 목록: `QUESTION_NOT_UNANSWERED`, `QUESTION_NOT_READY`, `QUESTION_LOCKED`, `VISIT_HAS_DELIVERED`, `COMMITMENT_DONE` (`02_도메인_규칙.md` 6절 `ErrorCode`)
 
 ## 2. 공통 응답 객체
 
@@ -101,7 +129,7 @@
 | POST | `/api/doctors` | DoctorRequest | 201 `DoctorResponse`, `Location: /api/doctors/{id}` | 400 |
 | GET | `/api/doctors/{id}` | - | 200 `DoctorDetailResponse` | 404 |
 | PUT | `/api/doctors/{id}` | DoctorRequest | 200 `DoctorResponse` | 400, 404 |
-| DELETE | `/api/doctors/{id}` | - | 204 (숨김 처리, D14) | 404 |
+| DELETE | `/api/doctors/{id}` | - | 200 `null` (숨김 처리, D14) | 404 |
 
 ```jsonc
 // DoctorRequest (등록·수정 공용. 수정 시 nextVisitDate가 null이면 예정일을 지운다)
@@ -133,7 +161,7 @@
 | POST | `/api/doctors/{doctorId}/visits` | VisitCreateRequest | 201 `VisitResponse` | 400, 404 |
 | GET | `/api/visits/{id}` | - | 200 `VisitResponse` + `doctor`(DoctorRef) 필드 추가 | 404 |
 | PUT | `/api/visits/{id}` | VisitUpdateRequest | 200 `VisitResponse` | 400, 404 |
-| DELETE | `/api/visits/{id}` | - | 204 (질문·약속 함께 삭제, D16) | 404, 409 `VISIT_HAS_DELIVERED` |
+| DELETE | `/api/visits/{id}` | - | 200 `null` (질문·약속 함께 삭제, D16) | 404, 409 `VISIT_HAS_DELIVERED` |
 
 ```jsonc
 // VisitCreateRequest
@@ -150,7 +178,7 @@
 ```
 
 `VisitService.create` — 한 트랜잭션: 의료진 조회(숨김이면 404) → 방문 날짜 미래 검사 → 약속 기한 과거 검사(`commitments[i].dueDate`) → Visit 저장 → Question들 저장 → Commitment들 저장 → `doctor.changeNextVisitDate(nextVisitDate)`.
-검증 에러는 **한 번에 모두** 모아서 400으로 돌려준다(Bean Validation 에러 + 서비스 검사 에러를 합쳐서). 구현: 서비스 검사를 `FieldValidationException`이 아닌 에러 목록으로 모아 한 번에 던지도록 `FieldValidationException`이 여러 개의 `(field, message)`를 가질 수 있게 한다. 단, 서비스 검사는 Bean Validation을 통과한 뒤에 실행되므로, Bean Validation 에러가 있으면 그것만 돌려준다.
+검증 에러는 **한 번에 모두** 모아서 400으로 돌려준다(Bean Validation 에러 + 서비스 검사 에러를 합쳐서). 구현: 서비스 검사 에러를 `List<FieldErrorItem>`으로 모아 `BusinessException(ErrorCode.VALIDATION_FAILED, errors)`로 한 번에 던진다. 단, 서비스 검사는 Bean Validation을 통과한 뒤에 실행되므로, Bean Validation 에러가 있으면 그것만 돌려준다.
 
 ## 6. 질문
 
@@ -162,7 +190,7 @@
 | POST | `/api/questions/{id}/start-checking` | - | 200 `QuestionResponse` | 404, 409 `QUESTION_NOT_UNANSWERED` |
 | POST | `/api/questions/{id}/answer` | AnswerRequest | 200 `QuestionResponse` | 400, 404, 409 `QUESTION_LOCKED` |
 | POST | `/api/questions/{id}/deliver` | - | 200 `QuestionResponse` | 404, 409 `QUESTION_NOT_READY` |
-| DELETE | `/api/questions/{id}` | - | 204 | 404, 409 `QUESTION_LOCKED` |
+| DELETE | `/api/questions/{id}` | - | 200 `null` | 404, 409 `QUESTION_LOCKED` |
 
 ```jsonc
 // AnswerRequest
@@ -184,13 +212,13 @@
 | PUT | `/api/commitments/{id}` | `{ "content": "...", "dueDate": "2026-11-12" }` | 200 `CommitmentResponse` | 400, 404, 409 `COMMITMENT_DONE` |
 | POST | `/api/commitments/{id}/complete` | - | 200 `CommitmentResponse` | 404 |
 | POST | `/api/commitments/{id}/reopen` | - | 200 `CommitmentResponse` | 404 |
-| DELETE | `/api/commitments/{id}` | - | 204 | 404 |
+| DELETE | `/api/commitments/{id}` | - | 200 `null` | 404 |
 
 ## 8. 관리
 
 | Method | URL | 성공 |
 | --- | --- | --- |
-| POST | `/api/admin/reset` | 204 — 전체 삭제 후 시드 입력(한 트랜잭션) |
+| POST | `/api/admin/reset` | 200 `null` — 전체 삭제 후 시드 입력(한 트랜잭션) |
 
 ## 9. 프론트 쿼리 갱신 규칙
 

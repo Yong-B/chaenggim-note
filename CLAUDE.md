@@ -17,7 +17,7 @@ Hanmi/                       ← 저장소 루트 = 백엔드 (Spring Boot, Grad
 ├── CLAUDE.md
 ├── docs/                    ← 설계 문서 (이 폴더가 기준)
 ├── build.gradle, settings.gradle, gradlew, gradle/
-├── src/                     ← 백엔드 소스 (com.chaenggim)
+├── src/                     ← 백엔드 소스 (org.example.chaenggim, 구조는 docs/11)
 └── frontend/                ← React + Vite + TypeScript (npm)
 ```
 
@@ -32,6 +32,7 @@ Hanmi/                       ← 저장소 루트 = 백엔드 (Spring Boot, Grad
 | 3 | `docs/02_도메인_규칙.md` | 엔티티, 상태 전이, 비즈니스 규칙, 검증·에러 메시지 | 항상 |
 | 4 | `docs/03_DB_스키마.md` | DDL 전문 | 백엔드 |
 | 5 | `docs/04_백엔드_설정.md` | build.gradle, application.yml, 패키지, 코딩 규칙 | 백엔드 |
+| 5-1 | `docs/11_코딩_컨벤션.md` | **패키지 구조·레이어 규칙. 코드 구조는 04보다 우선** | 백엔드 |
 | 6 | `docs/05_API_명세.md` | 엔드포인트, 요청·응답 JSON, 에러 형식 | 백엔드·프론트 |
 | 7 | `docs/06_화면_명세.md` | 화면별 구성, 문구, 빈 상태, 반응형 | 프론트 |
 | 8 | `docs/07_프론트_구현가이드.md` | Vite 설정, 폴더 구조, 타입, 쿼리, Hallmark·unslop 절차 | 프론트 |
