@@ -1,4 +1,4 @@
-package com.chaenggim.global.config;
+package org.example.chaenggim.global.config;
 
 import java.time.Clock;
 import java.time.ZoneId;

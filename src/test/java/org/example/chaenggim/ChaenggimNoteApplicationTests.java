@@ -1,4 +1,4 @@
-package com.chaenggim;
+package org.example.chaenggim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
