@@ -324,6 +324,13 @@ select {
   margin-top: var(--space-lg);
 }
 
+.home-date {
+  margin: calc(var(--space-md) * -1) 0 var(--space-lg);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
 .home-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -337,11 +344,12 @@ select {
 
   .home-grid__left {
     grid-column: 1;
+    grid-row: 1;
   }
 
   .home-grid__right {
     grid-column: 2;
-    grid-row: 2;
+    grid-row: 1;
   }
 
   .home-grid__full {
