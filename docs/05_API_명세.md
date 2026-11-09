@@ -71,7 +71,7 @@ public record ErrorBody(String code, String message, List<FieldErrorItem> fieldE
   "visitId": 2,
   "visitDate": "2026-11-02",          // 받은 날 (= 방문 날짜)
   "content": "고령 환자 관련 로수젯 자료가 있는지 궁금하다고 하심",
-  "productTag": null,                 // P1
+  "productTag": null,                 // P1. ROSUZET·AMOSARTAN·AMOPREL·EFE·ROLONTIS 또는 null
   "status": "READY",
   "answer": "학술팀에 확인한 자료 목록을 정리함. ...",   // 없으면 null
   "sourceType": "MEDICAL_TEAM",       // 없으면 null
@@ -169,7 +169,7 @@ public record ErrorBody(String code, String message, List<FieldErrorItem> fieldE
   "visitDate": "2026-11-09",
   "memo": "고령 환자 처방 경험 이야기 나눔",
   "nextVisitDate": "2026-11-16",            // null이면 의료진의 기존 예정일 유지 (D13)
-  "questions":   [ { "content": "...", "productTag": null } ],   // 0~10개
+  "questions":   [ { "content": "...", "productTag": "ROSUZET" } ],   // 0~10개. productTag는 P1, 선택(null 가능). 목록에 없는 값이면 400 BAD_REQUEST
   "commitments": [ { "content": "...", "dueDate": "2026-11-12" } ] // 0~10개
 }
 
@@ -184,7 +184,7 @@ public record ErrorBody(String code, String message, List<FieldErrorItem> fieldE
 
 | Method | URL | 요청 | 성공 | 실패 |
 | --- | --- | --- | --- | --- |
-| GET | `/api/questions?status=UNANSWERED` | status 선택(기본 UNANSWERED, 잘못된 값도 기본값) | 200 `QuestionListResponse` | - |
+| GET | `/api/questions?status=UNANSWERED&product=ROSUZET` | status 선택(기본 UNANSWERED, 잘못된 값도 기본값). product 선택(P1, 없거나 잘못된 값이면 전체) | 200 `QuestionListResponse` | - |
 | GET | `/api/questions/{id}` | - | 200 `QuestionResponse` | 404 |
 | PATCH | `/api/questions/{id}` | `{ "content": "..." }` | 200 `QuestionResponse` | 400, 404, 409 `QUESTION_LOCKED` |
 | POST | `/api/questions/{id}/start-checking` | - | 200 `QuestionResponse` | 404, 409 `QUESTION_NOT_UNANSWERED` |
@@ -199,7 +199,8 @@ public record ErrorBody(String code, String message, List<FieldErrorItem> fieldE
 // QuestionListResponse
 {
   "status": "UNANSWERED",
-  "counts": { "UNANSWERED": 1, "CHECKING": 1, "READY": 2, "DELIVERED": 1 },
+  "product": null,                    // P1. 적용한 제품 필터, 없으면 null
+  "counts": { "UNANSWERED": 1, "CHECKING": 1, "READY": 2, "DELIVERED": 1 },   // 제품 필터 적용
   "items": [ QuestionResponse ]
 }
 ```

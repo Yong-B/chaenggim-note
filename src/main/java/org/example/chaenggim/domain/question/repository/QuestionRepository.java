@@ -3,6 +3,7 @@ package org.example.chaenggim.domain.question.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.example.chaenggim.domain.question.entity.ProductTag;
 import org.example.chaenggim.domain.question.entity.Question;
 import org.example.chaenggim.domain.question.entity.QuestionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -60,7 +61,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             """)
     List<Question> findDeliveredByDoctorId(@Param("doctorId") Long doctorId);
 
-    // ---- 7.3 질문함 ----
+    // ---- 7.3 질문함 (product가 null이면 제품 필터 없음, P1) ----
 
     /** DELIVERED 외 상태: visit.visitDate ASC, id ASC. */
     @Query("""
@@ -68,9 +69,11 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             join fetch q.doctor d
             join fetch q.visit v
             where d.deletedAt is null and q.status = :status
+              and (:product is null or q.productTag = :product)
             order by v.visitDate asc, q.id asc
             """)
-    List<Question> findActiveByStatusOrderByVisitDate(@Param("status") QuestionStatus status);
+    List<Question> findActiveByStatusOrderByVisitDate(@Param("status") QuestionStatus status,
+                                                      @Param("product") ProductTag product);
 
     /** DELIVERED: deliveredAt DESC. */
     @Query("""
@@ -79,21 +82,23 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             join fetch q.visit v
             where d.deletedAt is null
               and q.status = org.example.chaenggim.domain.question.entity.QuestionStatus.DELIVERED
+              and (:product is null or q.productTag = :product)
             order by q.deliveredAt desc, q.id desc
             """)
-    List<Question> findActiveDelivered();
+    List<Question> findActiveDelivered(@Param("product") ProductTag product);
 
     // ---- 집계 (GROUP BY) ----
 
-    /** 상태별 개수. 개수가 0인 상태는 결과에 없다. */
+    /** 상태별 개수(product가 null이면 전체). 개수가 0인 상태는 결과에 없다. */
     @Query("""
             select new org.example.chaenggim.domain.question.repository.StatusCount(q.status, count(q))
             from Question q
             join q.doctor d
             where d.deletedAt is null
+              and (:product is null or q.productTag = :product)
             group by q.status
             """)
-    List<StatusCount> countActiveByStatus();
+    List<StatusCount> countActiveByStatus(@Param("product") ProductTag product);
 
     @Query("""
             select new org.example.chaenggim.domain.question.repository.DoctorReadyCount(d.id, count(q))

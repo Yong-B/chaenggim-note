@@ -8,11 +8,11 @@ import {
   startChecking,
   updateQuestion,
 } from '../api/questions'
-import type { AnswerRequest, QuestionResponse, QuestionStatus } from '../api/types'
+import type { AnswerRequest, ProductTag, QuestionResponse, QuestionStatus } from '../api/types'
 import { keys } from './keys'
 
-export function useQuestionsQuery(status: QuestionStatus) {
-  return useQuery({ queryKey: keys.questions(status), queryFn: () => listQuestions(status) })
+export function useQuestionsQuery(status: QuestionStatus, product: ProductTag | null) {
+  return useQuery({ queryKey: keys.questions(status, product), queryFn: () => listQuestions(status, product) })
 }
 
 export function useQuestionQuery(id: number) {

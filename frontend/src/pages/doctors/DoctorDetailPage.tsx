@@ -4,6 +4,7 @@ import type { CommitmentResponse, DoctorDetailResponse, QuestionResponse, VisitR
 import { Badge } from '../../components/Badge'
 import { EmptyState } from '../../components/EmptyState'
 import { PageTitle } from '../../components/PageTitle'
+import { ProductTagLabel } from '../../components/ProductTagLabel'
 import { QueryState } from '../../components/QueryState'
 import { useToast } from '../../components/Toast'
 import { formatDate, formatDateTime } from '../../lib/date'
@@ -82,6 +83,7 @@ function DoctorDetail({ detail }: { detail: DoctorDetailResponse }) {
                   <div className="row__main">
                     <span className="row__badges">
                       <Badge tone={statusTone[q.status]}>{statusLabel[q.status]}</Badge>
+                      <ProductTagLabel tag={q.productTag} />
                     </span>
                     <span className="row__text">{q.content}</span>
                     <span className="row__sub">받은 날 {formatDate(q.visitDate)}</span>
@@ -151,6 +153,11 @@ function DoctorDetail({ detail }: { detail: DoctorDetailResponse }) {
             {detail.deliveredQuestions.map((q) => (
               <li key={q.id} className="row">
                 <div className="row__main">
+                  {q.productTag && (
+                    <span className="row__badges">
+                      <ProductTagLabel tag={q.productTag} />
+                    </span>
+                  )}
                   <span className="row__text">{q.content}</span>
                   {q.deliveredAt && <span className="row__sub">전달 {formatDateTime(q.deliveredAt)}</span>}
                 </div>
@@ -210,6 +217,11 @@ function ReadyAnswerRow({ question: q }: { question: QuestionResponse }) {
   return (
     <li className="row">
       <div className="row__main">
+        {q.productTag && (
+          <span className="row__badges">
+            <ProductTagLabel tag={q.productTag} />
+          </span>
+        )}
         <span className="row__title">{q.content}</span>
         {q.answer && <span className="row__text memo">{q.answer}</span>}
         <span className="row__sub">출처: {q.sourceDetail ? `${source} · ${q.sourceDetail}` : source}</span>

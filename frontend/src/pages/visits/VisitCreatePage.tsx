@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../../api/client'
-import type { DoctorResponse, VisitCreateRequest } from '../../api/types'
+import type { DoctorResponse, ProductTag, VisitCreateRequest } from '../../api/types'
 import { Field } from '../../components/Field'
 import { PageTitle } from '../../components/PageTitle'
 import { QueryState } from '../../components/QueryState'
@@ -9,15 +9,16 @@ import { useToast } from '../../components/Toast'
 import { todayString } from '../../lib/date'
 import { errorMessage } from '../../lib/errors'
 import { clearError, fieldDescribedBy, toFieldErrorMap } from '../../lib/fieldErrors'
+import { isProductTag, PRODUCT_TAGS, productLabel } from '../../lib/labels'
 import { useDoctorQuery } from '../../queries/doctors'
 import { useCreateVisitMutation } from '../../queries/visits'
 
 const MAX_ROWS = 10
 
-type QuestionRow = { key: string; content: string }
+type QuestionRow = { key: string; content: string; productTag: ProductTag | '' }
 type CommitmentRow = { key: string; content: string; dueDate: string }
 
-const newQuestion = (): QuestionRow => ({ key: crypto.randomUUID(), content: '' })
+const newQuestion = (): QuestionRow => ({ key: crypto.randomUUID(), content: '', productTag: '' })
 const newCommitment = (): CommitmentRow => ({ key: crypto.randomUUID(), content: '', dueDate: '' })
 
 /** 06 화면 명세 5절 — 방문 기록 작성. */
@@ -46,9 +47,9 @@ function VisitCreateForm({ doctor }: { doctor: DoctorResponse }) {
 
   const clear = (field: string) => setErrors((prev) => clearError(prev, field))
 
-  const updateQuestion = (key: string, content: string) => {
-    setQuestions((rows) => rows.map((r) => (r.key === key ? { ...r, content } : r)))
-    clear(`q:${key}`)
+  const updateQuestion = (key: string, patch: Partial<QuestionRow>) => {
+    setQuestions((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+    if ('content' in patch) clear(`q:${key}`)
   }
   const updateCommitment = (key: string, patch: Partial<CommitmentRow>) => {
     setCommitments((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)))
@@ -66,7 +67,7 @@ function VisitCreateForm({ doctor }: { doctor: DoctorResponse }) {
       visitDate,
       memo: memo.trim() === '' ? null : memo,
       nextVisitDate: nextVisitDate === '' ? null : nextVisitDate,
-      questions: sentQuestions.map((q) => ({ content: q.content, productTag: null })),
+      questions: sentQuestions.map((q) => ({ content: q.content, productTag: q.productTag === '' ? null : q.productTag })),
       commitments: sentCommitments.map((c) => ({ content: c.content, dueDate: c.dueDate === '' ? null : c.dueDate })),
     }
 
@@ -155,13 +156,33 @@ function VisitCreateForm({ doctor }: { doctor: DoctorResponse }) {
                     value={q.content}
                     aria-invalid={!!error}
                     aria-describedby={fieldDescribedBy(id, error)}
-                    onChange={(e) => updateQuestion(q.key, e.target.value)}
+                    onChange={(e) => updateQuestion(q.key, { content: e.target.value })}
                   />
                   {error && (
                     <span className="field__error" id={`${id}-error`}>
                       {error}
                     </span>
                   )}
+                </div>
+                <div className="repeat-row__product">
+                  <label className="visually-hidden" htmlFor={`${id}-product`}>
+                    질문 {i + 1} 제품
+                  </label>
+                  <select
+                    id={`${id}-product`}
+                    className="select"
+                    value={q.productTag}
+                    onChange={(e) =>
+                      updateQuestion(q.key, { productTag: isProductTag(e.target.value) ? e.target.value : '' })
+                    }
+                  >
+                    <option value="">선택 안 함</option>
+                    {PRODUCT_TAGS.map((p) => (
+                      <option key={p} value={p}>
+                        {productLabel[p]}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {questions.length > 1 && (
                   <button

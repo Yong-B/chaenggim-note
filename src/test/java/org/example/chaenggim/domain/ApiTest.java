@@ -248,6 +248,28 @@ class ApiTest {
     }
 
     @Test
+    @DisplayName("P1 GET /api/questions?status=&product= → 제품 필터, 방문 작성 시 productTag 저장")
+    void questionsProductFilter() throws Exception {
+        mvc.perform(json(post("/api/doctors/" + d1 + "/visits"),
+                        "{\"visitDate\":\"2026-11-09\",\"questions\":[{\"content\":\"에페 질문\",\"productTag\":\"EFE\"}]}"))
+                .andExpect(status().isCreated());
+        mvc.perform(get("/api/questions").param("status", "UNANSWERED").param("product", "EFE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.product").value("EFE"))
+                .andExpect(jsonPath("$.data.items.length()").value(1))
+                .andExpect(jsonPath("$.data.items[0].productTag").value("EFE"))
+                .andExpect(jsonPath("$.data.counts.UNANSWERED").value(1))
+                .andExpect(jsonPath("$.data.counts.READY").value(0));
+        mvc.perform(get("/api/questions").param("status", "UNANSWERED").param("product", "WRONG"))
+                .andExpect(jsonPath("$.data.product").value(nullValue()))
+                .andExpect(jsonPath("$.data.items.length()").value(2));
+        mvc.perform(json(post("/api/doctors/" + d1 + "/visits"),
+                        "{\"visitDate\":\"2026-11-09\",\"questions\":[{\"content\":\"a\",\"productTag\":\"NOPE\"}]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
     @DisplayName("W-12 DELETE /api/doctors/{id} → 200(data null) → GET → 404")
     void deleteDoctorThenGet() throws Exception {
         mvc.perform(delete("/api/doctors/" + d1))

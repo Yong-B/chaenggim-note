@@ -9,6 +9,7 @@ import org.example.chaenggim.domain.commitment.entity.Commitment;
 import org.example.chaenggim.domain.commitment.repository.CommitmentRepository;
 import org.example.chaenggim.domain.doctor.entity.Doctor;
 import org.example.chaenggim.domain.doctor.repository.DoctorRepository;
+import org.example.chaenggim.domain.question.entity.ProductTag;
 import org.example.chaenggim.domain.question.entity.Question;
 import org.example.chaenggim.domain.question.entity.QuestionStatus;
 import org.example.chaenggim.domain.question.entity.SourceType;
@@ -164,11 +165,11 @@ class RepositoryQueryTest {
     @Test
     @DisplayName("질문함 상태별 목록과 개수는 숨김 의료진을 제외한다")
     void questionBox() {
-        assertThat(questionRepository.findActiveByStatusOrderByVisitDate(QuestionStatus.UNANSWERED))
+        assertThat(questionRepository.findActiveByStatusOrderByVisitDate(QuestionStatus.UNANSWERED, null))
                 .extracting(Question::getId).containsExactly(qUnanswered.getId());
-        assertThat(questionRepository.findActiveDelivered()).extracting(Question::getId)
+        assertThat(questionRepository.findActiveDelivered(null)).extracting(Question::getId)
                 .containsExactly(qDelivered.getId());
-        assertThat(questionRepository.countActiveByStatus())
+        assertThat(questionRepository.countActiveByStatus(null))
                 .extracting("status", "count")
                 .containsExactlyInAnyOrder(
                         tuple(QuestionStatus.UNANSWERED, 1L),
@@ -201,6 +202,29 @@ class RepositoryQueryTest {
         assertThat(commitmentRepository.countOpenByDoctorIds(List.of(hidden.getId()))).isEmpty();
         assertThat(questionRepository.existsByVisit_IdAndStatus(parkVisit.getId(), QuestionStatus.DELIVERED)).isTrue();
         assertThat(questionRepository.existsByVisit_IdAndStatus(kimNew.getId(), QuestionStatus.DELIVERED)).isFalse();
+    }
+
+    @Test
+    @DisplayName("P1 제품 필터: 상태 목록·전달 완료 목록·상태별 개수에 같은 제품 조건이 붙는다")
+    void productFilter() {
+        Visit visit = em.find(Visit.class, kimOld.getId());
+        Question tagged = Question.builder().visit(visit).content("로수젯 질문").productTag(ProductTag.ROSUZET).build();
+        em.persist(tagged);
+        Question otherTag = Question.builder().visit(visit).content("에페 질문").productTag(ProductTag.EFE).build();
+        em.persist(otherTag);
+        em.flush();
+        em.clear();
+
+        assertThat(questionRepository.findActiveByStatusOrderByVisitDate(QuestionStatus.UNANSWERED, ProductTag.ROSUZET))
+                .extracting(Question::getId).containsExactly(tagged.getId());
+        assertThat(questionRepository.findActiveByStatusOrderByVisitDate(QuestionStatus.UNANSWERED, null))
+                .extracting(Question::getId).containsExactly(qUnanswered.getId(), tagged.getId(), otherTag.getId());
+        assertThat(questionRepository.findActiveDelivered(ProductTag.ROSUZET)).isEmpty();
+        assertThat(questionRepository.countActiveByStatus(ProductTag.ROSUZET))
+                .extracting("status", "count")
+                .containsExactly(tuple(QuestionStatus.UNANSWERED, 1L));
+        assertThat(questionRepository.findActiveById(tagged.getId()).orElseThrow().getProductTag())
+                .isEqualTo(ProductTag.ROSUZET);
     }
 
     // ---- Commitment ----

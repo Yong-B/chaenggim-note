@@ -73,8 +73,8 @@ cd frontend && npm run lint && npm run build  # 프론트 검사
 | `/doctors` | 의료진 목록·검색 |
 | `/doctors/new`, `/doctors/:id/edit` | 의료진 등록·수정 |
 | `/doctors/:id` | 의료진 상세: 방문 전 준비, 방문 기록, 전달 완료한 질문, 완료한 약속 |
-| `/doctors/:id/visits/new`, `/visits/:id/edit` | 방문 기록 작성(질문·약속 각 최대 10개)·수정 |
-| `/questions`, `/questions/:id` | 질문함(상태 탭), 질문 상세(확인 시작·답변·전달 완료) |
+| `/doctors/:id/visits/new`, `/visits/:id/edit` | 방문 기록 작성(질문·약속 각 최대 10개, 질문마다 제품 선택)·수정 |
+| `/questions`, `/questions/:id` | 질문함(상태 탭 + 제품 필터), 질문 상세(확인 시작·답변·전달 완료) |
 | `/commitments/:id/edit` | 약속 수정 |
 
 휴대폰(768px 미만)에서는 하단 탭, PC에서는 왼쪽 메뉴로 바뀝니다.

@@ -31,6 +31,12 @@ export const productLabel: Record<ProductTag, string> = {
   ROLONTIS: '롤론티스',
 }
 
+export const PRODUCT_TAGS: ProductTag[] = ['ROSUZET', 'AMOSARTAN', 'AMOPREL', 'EFE', 'ROLONTIS']
+
+export function isProductTag(value: string | null): value is ProductTag {
+  return value !== null && (PRODUCT_TAGS as string[]).includes(value)
+}
+
 /** 탭·필터 순서 */
 export const QUESTION_STATUSES: QuestionStatus[] = ['UNANSWERED', 'CHECKING', 'READY', 'DELIVERED']
 

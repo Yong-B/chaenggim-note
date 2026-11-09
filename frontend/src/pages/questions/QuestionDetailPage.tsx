@@ -6,6 +6,7 @@ import type { QuestionResponse, SourceType } from '../../api/types'
 import { Badge } from '../../components/Badge'
 import { Field } from '../../components/Field'
 import { PageTitle } from '../../components/PageTitle'
+import { ProductTagLabel } from '../../components/ProductTagLabel'
 import { QueryState } from '../../components/QueryState'
 import { useToast } from '../../components/Toast'
 import { formatDate, formatDateTime } from '../../lib/date'
@@ -105,6 +106,7 @@ function QuestionCard({ question: q }: { question: QuestionResponse }) {
     <section className="section question-card" aria-label="질문">
       <span className="row__badges">
         <Badge tone={statusTone[q.status]}>{statusLabel[q.status]}</Badge>
+        <ProductTagLabel tag={q.productTag} />
       </span>
       {editing ? (
         <form onSubmit={save} noValidate>

@@ -21,6 +21,7 @@ import org.example.chaenggim.domain.home.dto.HomeResponse;
 import org.example.chaenggim.domain.home.service.HomeService;
 import org.example.chaenggim.domain.question.dto.AnswerRequest;
 import org.example.chaenggim.domain.question.dto.QuestionResponse;
+import org.example.chaenggim.domain.question.entity.ProductTag;
 import org.example.chaenggim.domain.question.entity.Question;
 import org.example.chaenggim.domain.question.entity.QuestionStatus;
 import org.example.chaenggim.domain.question.entity.SourceType;
@@ -349,6 +350,29 @@ class ServiceIntegrationTest {
                 entry(QuestionStatus.CHECKING, 1L),
                 entry(QuestionStatus.READY, 2L),
                 entry(QuestionStatus.DELIVERED, 1L));
+    }
+
+    @Test
+    @DisplayName("P1 방문 작성 시 질문 제품 태그 저장, 질문함 제품 필터는 목록과 개수에 함께 적용, 잘못된 값은 전체")
+    void productTagAndFilter() {
+        visitService.create(d4, new VisitCreateRequest(T, null, null,
+                List.of(new QuestionItem("로수젯 질문", ProductTag.ROSUZET), new QuestionItem("태그 없는 질문", null)),
+                List.of()));
+
+        var filtered = questionService.list("UNANSWERED", "ROSUZET");
+        assertThat(filtered.product()).isEqualTo(ProductTag.ROSUZET);
+        assertThat(filtered.items()).extracting(QuestionResponse::content, QuestionResponse::productTag)
+                .containsExactly(tuple("로수젯 질문", ProductTag.ROSUZET));
+        assertThat(filtered.counts()).containsExactly(
+                entry(QuestionStatus.UNANSWERED, 1L), entry(QuestionStatus.CHECKING, 0L),
+                entry(QuestionStatus.READY, 0L), entry(QuestionStatus.DELIVERED, 0L));
+
+        var all = questionService.list("UNANSWERED", "WRONG");
+        assertThat(all.product()).isNull();
+        assertThat(all.items()).hasSize(3);
+        assertThat(all.counts().get(QuestionStatus.UNANSWERED)).isEqualTo(3L);
+        // 홈 질문 현황은 제품 필터와 무관
+        assertThat(homeService.load().questionCounts().get(QuestionStatus.UNANSWERED)).isEqualTo(3L);
     }
 
     @Test
